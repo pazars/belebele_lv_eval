@@ -9,12 +9,12 @@ Attiecīgi process ir lēns un laikietilpīgs. Rezultāti tiks ik pa laikam papi
 
 ## Rezultāti
 
-| Modelis              | Rezultāts, % | Jautājumi |
-|----------------------|--------------|-----------|
-| ChatGPT-4            | 100          | 47/900    |
-| ChatGPT-3.5          | 60           | 20/900    |
-| Llama-2-70B-chat-hf* | 30           | 20/900    |
-| Minēšana             | 25           | 900/900   |
+| Modelis              | Rezultāts, % | Jautājumi | Pareizi |
+|----------------------|--------------|-----------|---------|
+| ChatGPT-4            | 91.49        | 47/900    | 43/47   |
+| ChatGPT-3.5          | 60           | 20/900    | 12/20   |
+| Llama-2-70B-chat-hf* | 30           | 20/900    | 6/20    |
+| Minēšana             | 25           | 900/900   | 900/900 |
 
 *[Llama-2-70B-chat-hf](https://huggingface.co/spaces/akdeniz27/LLaMa-2-70b-chat-hf-with-EasyLLM)
 
