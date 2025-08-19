@@ -7,9 +7,11 @@ Vieta | Modelis              | Rezultāts, % | Pareizi | Izstrādātājs | Open 
 2     | gpt-5-mini           | 95.4         | 859     | OpenAI 🇺🇸    | ❌          | 19/08/2025  |
 4     | gpt-5-nano           | 89.1         | 802     | OpenAI 🇺🇸    | ❌          | 19/08/2025  |
 
-Kopējais jautājumu skaits: 900.
+### 📝 Piezīmes
 
-Pēdējās izmaiņas: 2025. gada 19. augusts.
+- Kopējais jautājumu skaits: 900. 
+- Visiem modeļiem izvērtēšana veikta tikai 1 reizi.
+- Pēdējās izmaiņas: 2025. gada 19. augusts.
 
 Modeļi, kas vēl jāizvērtē:
 - Anthropic Claude
@@ -36,4 +38,4 @@ Atbildi uz jautājumu par teksta fragmentu, izvēloties pareizo atbilžu variant
 4) {mc_answer4}
 ```
 
-Atbilde, kas tiek saņemta no valodas modeļa ir A, B, C vai D. Bez paskaidrojuma.
+Atbilde, kas tiek saņemta no valodas modeļa ir A, B, C vai D. Bez paskaidrojuma. Ir iestrādāta opcija atgriezt un saglabāt modeļa atbildes paskaidrojumus. Tās ieslēgšana visticamāk uzlabo modeļa rezultātu, bet izmaksu dēļ šo rezultātu iegūšanā tas netika darīts.
