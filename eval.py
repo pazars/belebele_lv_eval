@@ -1,8 +1,8 @@
 import instructor
 import os
+import common
 import pandas as pd
 from tqdm import tqdm
-from datasets import load_dataset
 from pydantic import BaseModel
 from typing import Literal
 from dotenv import load_dotenv
@@ -16,23 +16,29 @@ load_dotenv()
 MODEL = os.getenv("MODEL_STRING")
 
 # Limit number of questions (testing/debugging)
-LIMIT = None
+LIMIT = 2
+
+# Return model's reasoning
+REASONING = False
 
 print("Loading BELEBELE dataset from HuggingFace")
-ds = load_dataset("facebook/belebele", "lvs_Latn")
-ds = ds["test"]
+ds, num_qs = common.load_belebele_lv(limit=LIMIT)
 
-num_qs = 900
-if LIMIT and LIMIT > 0:
-    ds[:LIMIT]
-    num_qs = LIMIT
+if REASONING:
+    class Answer(BaseModel):
+        answer: Literal["1", "2", "3", "4"]
+        reasoning: str
 
+    df = pd.DataFrame(
+        columns=["question_number", "model_answer", "correct_answer", "model_reasoning"],
+    )
+else:
+    class Answer(BaseModel):
+        answer: Literal["1", "2", "3", "4"]
 
-# Define what you want
-class Answer(BaseModel):
-    answer: Literal["1", "2", "3", "4"]
-    # reasoning: str
-
+    df = pd.DataFrame(
+        columns=["question_number", "model_answer", "correct_answer"],
+    )
 
 kwargs = {}
 if "google/" in MODEL:
@@ -44,18 +50,10 @@ if "google/" in MODEL:
 
 client = instructor.from_provider(MODEL, **kwargs)
 
-df = pd.DataFrame(
-    columns=["question_number", "model_answer", "correct_answer", "model_reasoning"],
-)
 
 print(f"Evaluating model: {MODEL.split('/')[-1]}")
 for idx, line in tqdm(enumerate(iter(ds)), total=num_qs):
-    prompt = "Atbildi uz jautājumu par teksta fragmentu, izvēloties pareizo atbilžu variantu:\n\n"
-    prompt += line["flores_passage"] + "\n\n" + line["question"] + "\n\n"
-    prompt += f"1) {line['mc_answer1']}.\n"
-    prompt += f"2) {line['mc_answer2']}.\n"
-    prompt += f"3) {line['mc_answer3']}.\n"
-    prompt += f"4) {line['mc_answer4']}.\n"
+    prompt = common.write_prompt(line)
 
     res = client.chat.completions.create(
         response_model=Answer,
@@ -65,17 +63,23 @@ for idx, line in tqdm(enumerate(iter(ds)), total=num_qs):
     qnum = int(line["question_number"])
     corr = int(line["correct_answer_num"])
 
-    df.loc[idx] = [qnum, int(res.answer), corr, None]
+    if REASONING:
+        row = [qnum, int(res.answer), corr, res.reasoning]
+    else:
+        row = [qnum, int(res.answer), corr]
+
+    df.loc[idx] = row
 
     if LIMIT and idx + 1 == LIMIT:
         break
 
+# Export results file
 dt = datetime.now(tz=timezone.utc).strftime("%Y%m%d_%H%M%S")
 fname = MODEL.split("/")[-1] + f"_{dt}.csv"
 export_path = Path(os.getenv("RESULTS_DIR")) / fname
 df.to_csv(export_path)
 
-
+# Show stats
 num_ask = (df["question_number"] > 0).sum()
 num_ans = (df["model_answer"] > 0).sum()
 num_corr = (df["model_answer"] == df["correct_answer"]).sum()
