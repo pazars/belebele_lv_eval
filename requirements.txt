@@ -1,0 +1,5 @@
+instructor
+google-genai
+jsonref
+datasets
+tqdm
