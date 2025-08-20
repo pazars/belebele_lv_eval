@@ -2,8 +2,19 @@ import os
 import pandas as pd
 
 from pathlib import Path
+from typing import Literal
+from pydantic import BaseModel
 from datetime import datetime, timezone
 from datasets import load_dataset
+
+
+class AnswerReasoning(BaseModel):
+    answer: Literal["1", "2", "3", "4"]
+    reasoning: str
+
+
+class Answer(BaseModel):
+    answer: Literal["1", "2", "3", "4"]
 
 
 def load_belebele_lv(lang: str = "lvs_Latn"):

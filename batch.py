@@ -4,16 +4,10 @@ import io
 import os
 import pandas as pd
 from tqdm import tqdm
-from pydantic import BaseModel
-from typing import Literal
 from pathlib import Path
 from openai import OpenAI
 from dotenv import load_dotenv
 from openai.lib._parsing._completions import type_to_response_format_param
-
-
-class Answer(BaseModel):
-    answer: Literal["1", "2", "3", "4"]
 
 
 def submit_openai_batch(model: str, limit: int = None):
@@ -22,7 +16,7 @@ def submit_openai_batch(model: str, limit: int = None):
     data = []
 
     num = limit if limit else 900
-    res_fmt = type_to_response_format_param(Answer)
+    res_fmt = type_to_response_format_param(common.Answer)
 
     for idx, line in tqdm(enumerate(iter(ds)), total=num):
         prompt = common.write_prompt(line)
@@ -74,28 +68,27 @@ def process_batch_output(fp: Path, include_reason: bool = False):
     cols = ["question_number", "model_answer", "correct_answer"]
     if include_reason:
         cols.append("model_reasoning")
-    
+
     df = pd.DataFrame(columns=cols)
 
     data = []
     with open(str(fp)) as f:
         for line in f:
             data.append(json.loads(line))
-    
-    for idx, line in tqdm(enumerate(iter(ds)), total=len(data)):
 
+    for idx, line in tqdm(enumerate(iter(ds)), total=len(data)):
         res = data[idx]
-        choice = res['response']['body']['choices'][0]
-        content = json.loads(choice['message']['content'])
-        ans = int(content['answer'])
+        choice = res["response"]["body"]["choices"][0]
+        content = json.loads(choice["message"]["content"])
+        ans = int(content["answer"])
 
         qnum = int(line["question_number"])
         corr = int(line["correct_answer_num"])
 
         row = [qnum, ans, corr]
         if include_reason:
-            row.append(content['reasoning'])
-        
+            row.append(content["reasoning"])
+
         df.loc[idx] = row
 
         if idx + 1 == len(data):
@@ -111,7 +104,7 @@ if __name__ == "__main__":
     model = os.getenv("MODEL_STRING").split("/")[-1]
     print(f"Model name: {model}")
 
-    # -- Uncomment to submit a batch -- 
+    # -- Uncomment to submit a batch --
     # metadata = submit_openai_batch(model, limit)
     # print(metadata)
 

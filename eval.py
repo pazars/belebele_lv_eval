@@ -4,62 +4,65 @@ import instructor
 import pandas as pd
 
 from tqdm import tqdm
-from pydantic import BaseModel
-from typing import Literal
 from dotenv import load_dotenv
 from litellm import completion
+from instructor.exceptions import InstructorRetryException
+from tenacity import (
+    retry_if_exception_type,
+    wait_exponential,
+    stop_after_attempt,
+    retry,
+)
 
 
-# API keys and private variables (see .env.example)
+# API keys and other variables (see .env.example)
 load_dotenv()
 
-# Limit number of questions (testing/debugging)
-LIMIT = 1
-
-# Return model's reasoning
-REASONING = False
+model_name = os.getenv("MODEL_STRING")
+reasoning = bool(int(os.getenv("REASONING", 0)))
+limit = int(os.getenv("LIMIT", 900))
 
 client = instructor.from_litellm(completion)
-
-# Instructor's model string
-model_name = os.getenv("MODEL_STRING")
 
 print("Loading BELEBELE dataset from HuggingFace")
 ds = common.load_belebele_lv()
 
 cols = ["question_number", "model_answer", "correct_answer"]
-if REASONING:
-    class Answer(BaseModel):
-        answer: Literal["1", "2", "3", "4"]
-        reasoning: str
-    cols.append("model_reasoning")
-else:
-    class Answer(BaseModel):
-        answer: Literal["1", "2", "3", "4"]
-
+cols.append("model_reasoning") if reasoning else None
 df = pd.DataFrame(columns=cols)
 
-print(f"Evaluating model: {model_name.split('/')[-1]}")
-for idx, line in tqdm(enumerate(iter(ds)), total=LIMIT):
-    prompt = common.write_prompt(line)
 
-    res = client.chat.completions.create(
+@retry(
+    retry=retry_if_exception_type(InstructorRetryException),
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=2, min=20, max=120),
+    before_sleep=lambda retry_state: print(
+        f"Rate limited, waiting... (attempt {retry_state.attempt_number})"
+    ),
+)
+def rate_limit_safe_extraction(prompt: str):
+    """Handle rate limits with longer delays."""
+    return client.chat.completions.create(
         model=model_name,
-        response_model=Answer,
+        response_model=common.AnswerReasoning if reasoning else common.Answer,
         messages=[{"role": "user", "content": prompt}],
     )
+
+
+print(f"Evaluating model: {model_name.split('/')[-1]}")
+for idx, line in tqdm(enumerate(iter(ds)), total=limit):
+    prompt = common.write_prompt(line)
+    res = rate_limit_safe_extraction(prompt)
 
     qnum = int(line["question_number"])
     corr = int(line["correct_answer_num"])
 
-    if REASONING:
-        row = [qnum, int(res.answer), corr, res.reasoning]
-    else:
-        row = [qnum, int(res.answer), corr]
+    row = [qnum, int(res.answer), corr]
+    row.append(res.reasoning) if reasoning else None
 
     df.loc[idx] = row
 
-    if LIMIT and idx + 1 == LIMIT:
+    if idx + 1 >= limit:
         break
 
 # Export results to results dir
