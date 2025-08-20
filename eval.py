@@ -1,25 +1,25 @@
-import instructor
 import os
 import common
+import instructor
 import pandas as pd
+
 from tqdm import tqdm
 from pydantic import BaseModel
 from typing import Literal
 from dotenv import load_dotenv
-from pathlib import Path
-from datetime import datetime, timezone
+
 
 # API keys and private variables (see .env.example)
 load_dotenv()
-
-# Instructor's model string
-MODEL = os.getenv("MODEL_STRING")
 
 # Limit number of questions (testing/debugging)
 LIMIT = 2
 
 # Return model's reasoning
 REASONING = False
+
+# Instructor's model string
+model_name = os.getenv("MODEL_STRING")
 
 print("Loading BELEBELE dataset from HuggingFace")
 ds, num_qs = common.load_belebele_lv(limit=LIMIT)
@@ -41,17 +41,16 @@ else:
     )
 
 kwargs = {}
-if "google/" in MODEL:
+if "google/" in model_name:
     kwargs = {
         "vertexai": True,
         "project": os.getenv("GCP_PROJECT_ID"),
         "location": os.getenv("GCP_LOCATION"),
     }
 
-client = instructor.from_provider(MODEL, **kwargs)
+client = instructor.from_provider(model_name, **kwargs)
 
-
-print(f"Evaluating model: {MODEL.split('/')[-1]}")
+print(f"Evaluating model: {model_name.split('/')[-1]}")
 for idx, line in tqdm(enumerate(iter(ds)), total=num_qs):
     prompt = common.write_prompt(line)
 
@@ -73,19 +72,8 @@ for idx, line in tqdm(enumerate(iter(ds)), total=num_qs):
     if LIMIT and idx + 1 == LIMIT:
         break
 
-# Export results file
-dt = datetime.now(tz=timezone.utc).strftime("%Y%m%d_%H%M%S")
-fname = MODEL.split("/")[-1] + f"_{dt}.csv"
-export_path = Path(os.getenv("RESULTS_DIR")) / fname
-df.to_csv(export_path)
+# Export results to results dir
+common.export_results(df, model_name)
 
-# Show stats
-num_ask = (df["question_number"] > 0).sum()
-num_ans = (df["model_answer"] > 0).sum()
-num_corr = (df["model_answer"] == df["correct_answer"]).sum()
-
-print("Total number of questions: 900")
-print(f"Number of questions asked: {num_ask}")
-print(f"Number of questions answered: {num_ans}")
-print(f"Correct answers: {num_corr}")
-print(f"Percentage correct: {(num_corr / num_ask * 100):.1f}%")
+# Show statistics
+common.print_stats(df)

@@ -1,16 +1,14 @@
+import os
+import pandas as pd
+
+from pathlib import Path
+from datetime import datetime, timezone
 from datasets import load_dataset
 
 
-def load_belebele_lv(lang: str = "lvs_Latn", limit: int = None):
+def load_belebele_lv(lang: str = "lvs_Latn"):
     ds = load_dataset("facebook/belebele", lang)
-    ds = ds["test"]
-
-    num_qs = 900
-    if limit and limit > 0:
-        ds[:limit]
-        num_qs = limit
-
-    return (ds, num_qs)
+    return ds["test"]
 
 
 def write_prompt(row):
@@ -21,3 +19,27 @@ def write_prompt(row):
     prompt += f"3) {row['mc_answer3']}.\n"
     prompt += f"4) {row['mc_answer4']}.\n"
     return prompt
+
+
+def export_results(df: pd.DataFrame, model: str):
+    # Export results file
+    dt = datetime.now(tz=timezone.utc).strftime("%Y%m%d_%H%M%S")
+    fname = model.split("/")[-1] + f"_{dt}.csv"
+    export_path = Path(os.getenv("RESULTS_DIR")) / fname
+    df.to_csv(export_path)
+
+
+def print_stats(df: pd.DataFrame):
+    num_ask = (df["question_number"] > 0).sum()
+    num_ans = (df["model_answer"] > 0).sum()
+    num_corr = (df["model_answer"] == df["correct_answer"]).sum()
+
+    print("Total number of questions: 900")
+    print(f"Number of questions asked: {num_ask}")
+    print(f"Number of questions answered: {num_ans}")
+    print(f"Correct answers: {num_corr}")
+    print(f"Percentage correct: {(num_corr / num_ask * 100):.1f}%")
+
+
+if __name__ == "__main__":
+    a, b = load_belebele_lv(limit=10)
