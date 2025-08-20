@@ -1,4 +1,6 @@
+litellm
 instructor
+instructor[litellm]
 google-genai
 jsonref
 datasets

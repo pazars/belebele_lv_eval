@@ -7,6 +7,7 @@ from tqdm import tqdm
 from pydantic import BaseModel
 from typing import Literal
 from dotenv import load_dotenv
+from litellm import completion
 
 
 # API keys and private variables (see .env.example)
@@ -18,43 +19,32 @@ LIMIT = 1
 # Return model's reasoning
 REASONING = False
 
+client = instructor.from_litellm(completion)
+
 # Instructor's model string
 model_name = os.getenv("MODEL_STRING")
 
 print("Loading BELEBELE dataset from HuggingFace")
 ds = common.load_belebele_lv()
 
+cols = ["question_number", "model_answer", "correct_answer"]
 if REASONING:
     class Answer(BaseModel):
         answer: Literal["1", "2", "3", "4"]
         reasoning: str
-
-    df = pd.DataFrame(
-        columns=["question_number", "model_answer", "correct_answer", "model_reasoning"],
-    )
+    cols.append("model_reasoning")
 else:
     class Answer(BaseModel):
         answer: Literal["1", "2", "3", "4"]
 
-    df = pd.DataFrame(
-        columns=["question_number", "model_answer", "correct_answer"],
-    )
-
-kwargs = {}
-if "google/" in model_name:
-    kwargs = {
-        "vertexai": True,
-        "project": os.getenv("GCP_PROJECT_ID"),
-        "location": os.getenv("GCP_LOCATION"),
-    }
-
-client = instructor.from_provider(model_name, **kwargs)
+df = pd.DataFrame(columns=cols)
 
 print(f"Evaluating model: {model_name.split('/')[-1]}")
 for idx, line in tqdm(enumerate(iter(ds)), total=LIMIT):
     prompt = common.write_prompt(line)
 
     res = client.chat.completions.create(
+        model=model_name,
         response_model=Answer,
         messages=[{"role": "user", "content": prompt}],
     )
