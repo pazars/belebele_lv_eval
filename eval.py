@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Limit number of questions (testing/debugging)
-LIMIT = 2
+LIMIT = 1
 
 # Return model's reasoning
 REASONING = False
@@ -22,7 +22,7 @@ REASONING = False
 model_name = os.getenv("MODEL_STRING")
 
 print("Loading BELEBELE dataset from HuggingFace")
-ds, num_qs = common.load_belebele_lv(limit=LIMIT)
+ds = common.load_belebele_lv()
 
 if REASONING:
     class Answer(BaseModel):
@@ -51,7 +51,7 @@ if "google/" in model_name:
 client = instructor.from_provider(model_name, **kwargs)
 
 print(f"Evaluating model: {model_name.split('/')[-1]}")
-for idx, line in tqdm(enumerate(iter(ds)), total=num_qs):
+for idx, line in tqdm(enumerate(iter(ds)), total=LIMIT):
     prompt = common.write_prompt(line)
 
     res = client.chat.completions.create(
