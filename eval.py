@@ -1,5 +1,6 @@
 import os
 import common
+import litellm
 import instructor
 import pandas as pd
 
@@ -14,6 +15,9 @@ from tenacity import (
     retry,
 )
 
+
+# litellm._turn_on_debug()
+litellm.drop_params = True
 
 # API keys and other variables (see .env.example)
 load_dotenv()
@@ -34,10 +38,10 @@ df = pd.DataFrame(columns=cols)
 
 @retry(
     retry=retry_if_exception_type(InstructorRetryException),
-    stop=stop_after_attempt(3),
-    wait=wait_exponential(multiplier=2, min=20, max=120),
+    stop=stop_after_attempt(4),
+    wait=wait_exponential(multiplier=2, min=5, max=120),
     before_sleep=lambda retry_state: print(
-        f"Rate limited, waiting... (attempt {retry_state.attempt_number})"
+        f"Retry exception. Maybe structure or rate limit (attempt {retry_state.attempt_number})"
     ),
 )
 def rate_limit_safe_extraction(prompt: str):
