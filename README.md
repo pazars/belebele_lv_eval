@@ -1,12 +1,13 @@
 ## Rezultāti
 
-Vieta | Modelis              | Rezultāts, % | Pareizi | Izstrādātājs | Open source | Datums     |
-------|----------------------|--------------|---------|--------------|-------------|------------|
-1     | gemini-2.5-pro       | 95.7         | 861     | Google 🇺🇸    | ❌          | 18/08/2025  |
-1     | gpt-5                | 95.7         | 861     | OpenAI 🇺🇸    | ❌          | 20/08/2025  |                
-3     | gemini-2.5-flash     | 95.4         | 859     | Google 🇺🇸    | ❌          | 18/08/2025  |
-3     | gpt-5-mini           | 95.4         | 859     | OpenAI 🇺🇸    | ❌          | 19/08/2025  |
-5     | gpt-5-nano           | 89.1         | 802     | OpenAI 🇺🇸    | ❌          | 19/08/2025  |
+Vieta | Modelis              | Rezultāts, % | Pareizi | Izstrādātājs   | Open source | Datums     |
+------|----------------------|--------------|---------|----------------|-------------|------------|
+1     | gemini-2.5-pro       | 95.7         | 861     | Google 🇺🇸      | ❌          | 18/08/2025  |
+1     | gpt-5                | 95.7         | 861     | OpenAI 🇺🇸      | ❌          | 20/08/2025  |                
+3     | gemini-2.5-flash     | 95.4         | 859     | Google 🇺🇸      | ❌          | 18/08/2025  |
+3     | gpt-5-mini           | 95.4         | 859     | OpenAI 🇺🇸      | ❌          | 19/08/2025  |
+5     | kimi-latest          | 90.0         | 810     | Moonshot AI 🇨🇳 | ❓          | 20/08/2025  |
+6     | gpt-5-nano           | 89.1         | 802     | OpenAI 🇺🇸      | ❌          | 19/08/2025  |
 
 ### 📝 Piezīmes
 
@@ -23,6 +24,7 @@ Modeļi, kas vēl jāizvērtē:
 - Qwen 3
 - Grok 4
 - Mistral
+- Cohere
 
 ## Izmantotā vaicājuma šablons
 
