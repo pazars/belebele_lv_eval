@@ -7,8 +7,9 @@ Vieta | Modelis                       | Rezultāts, % | Pareizi | Izstrādātāj
 3     | gemini-2.5-flash              | 95.4         | 859     | Google 🇺🇸            | ❌     | 18/08/2025  |
 3     | gpt-5-mini                    | 95.4         | 859     | OpenAI 🇺🇸            | ❌     | 19/08/2025  |
 5     | Qwen3-235B-A22B-Instruct-2507 | 93.1         | 838     | Alibaba Cloud 🇨🇳     | ✅     | 20/08/2025  |
-6     | kimi-latest                   | 90.0         | 810     | Moonshot AI 🇨🇳       | ❓     | 20/08/2025  |
-7     | gpt-5-nano                    | 89.1         | 802     | OpenAI 🇺🇸            | ❌     | 19/08/2025  |
+6     | gpt-oss-120b                  | 91.6         | 824     | OpenAI 🇺🇸            | ✅     | 21/08/2025  |
+7     | kimi-latest                   | 90.0         | 810     | Moonshot AI 🇨🇳       | ❓     | 20/08/2025  |
+8     | gpt-5-nano                    | 89.1         | 802     | OpenAI 🇺🇸            | ❌     | 19/08/2025  |
 
 ### 📝 Piezīmes
 
